@@ -3,11 +3,13 @@ package uk.co.tappable.feedback
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateOffsetAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -37,6 +39,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import uk.co.tappable.feedback.component.LogsViewer
 import kotlin.math.roundToInt
 
 
@@ -53,9 +56,9 @@ fun Feedback(modifier: Modifier = Modifier, content: @Composable (Modifier) -> U
     val screenWidth = remember(context) { displayMetrics.widthPixels }
     var offsetX by rememberSaveable { mutableFloatStateOf(0f) }
     var offsetY by rememberSaveable { mutableFloatStateOf(0f) }
-    val offset = animateOffsetAsState(
+    val offset by animateOffsetAsState(
         targetValue = Offset(if (expanded) 5f else offsetX, if (expanded) 5f else offsetY),
-        label = "debug"
+        label = "debugOffsetAnimation",
     )
     val blur = animateDpAsState(targetValue = if (expanded) 10.dp else 0.dp, label = "blur")
 
@@ -73,71 +76,76 @@ fun Feedback(modifier: Modifier = Modifier, content: @Composable (Modifier) -> U
             Surface(
                 modifier = Modifier
                     .statusBarsPadding()
-                    .systemBarsPadding()
                     .padding(top = with(density) { (fabSize.height / 2).toDp() })
                     .matchParentSize(),
                 color = MaterialTheme.colorScheme.onSurface
             ) {
                 //TODO: add content to debug menu
+                LogsViewer(Modifier.fillMaxSize())
             }
         }
         //show a floating button above the app content
-
-        FloatingActionButton(
-            onClick = {
-                expanded = !expanded
-                println("Feedback button clicked")
-            },
-            modifier = Modifier
-                .onGloballyPositioned {
-                    fabSize = it.size
-                    if (offset.value == Offset.Zero) {
-                        //update position to half screen
-                        offsetX = screenWidth.toFloat() / 2
-                        offsetY = screenHeight.toFloat() / 2
+        BoxWithConstraints(
+            Modifier
+                .statusBarsPadding()
+                .fillMaxSize()
+        ) {
+            FloatingActionButton(
+                onClick = {
+                    expanded = !expanded
+                    println("Feedback button clicked")
+                },
+                modifier = Modifier
+                    .onGloballyPositioned {
+                        fabSize = it.size
+                        if (offset == Offset.Zero) {
+                            //update position to half screen
+                            offsetX = screenWidth.toFloat() / 2
+                            offsetY = screenHeight.toFloat() / 2
+                        }
                     }
-                }
-                .offset {
-                    IntOffset(
-                        offset.value.x.roundToInt(),
-                        offset.value.y
-                            .roundToInt()
-                            .coerceIn(fabSize.height, screenHeight)
-                    )
-                }
-                .pointerInput(Unit) {
-                    if (!expanded) {
-                        detectDragGestures(
-                            onDrag = { change, dragAmount ->
-                                change.consume()
-
-                                offsetX += dragAmount.x
-                                offsetY += dragAmount.y
-                            },
-                            onDragEnd = {
-                                offsetX = offsetX.roundToNearestValue(
-                                    lowEnd = fabSize.width
-                                        .div(2)
-                                        .times(-1)
-                                        .plus(spacing),
-                                    highEnd = screenWidth.toFloat() - fabSize.width
-                                        .div(2)
-                                        .plus(spacing)
-                                )
-                            },
+                    .offset {
+                        IntOffset(
+                            offset.x.roundToInt(),
+                            offset.y
+                                .roundToInt()
+                                .coerceIn(0, constraints.maxHeight - fabSize.height)
                         )
                     }
+                    .pointerInput(Unit) {
+                        if (!expanded) {
+                            detectDragGestures(
+                                onDrag = { change, dragAmount ->
+                                    change.consume()
+
+                                    offsetX += dragAmount.x
+                                    offsetY += dragAmount.y
+                                },
+                                onDragEnd = {
+                                    offsetX = offsetX.roundToNearestValue(
+                                        lowEnd = fabSize.width
+                                            .div(2)
+                                            .times(-1)
+                                            .plus(spacing),
+                                        highEnd = constraints.maxWidth.toFloat() - fabSize.width
+                                            .div(2)
+                                            .plus(spacing)
+                                    )
+                                },
+                            )
+                        }
+                    },
+                shape = CircleShape,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                content = {
+                    Icon(
+                        imageVector = if (expanded) Icons.Default.Close else Icons.Default.BugReport,
+                        contentDescription = "Feedback",
+                    )
                 },
-            shape = CircleShape,
-            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
-            content = {
-                Icon(
-                    imageVector = if (expanded) Icons.Default.Close else Icons.Default.BugReport,
-                    contentDescription = "Feedback",
-                )
-            },
-        )
+            )
+        }
     }
 }
 
