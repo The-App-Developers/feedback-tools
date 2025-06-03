@@ -1,19 +1,17 @@
 package uk.co.tappable.feedback
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateOffsetAsState
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BugReport
@@ -28,6 +26,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
@@ -47,7 +46,9 @@ private const val minSpacing = 8
 
 @Composable
 fun Feedback(modifier: Modifier = Modifier, content: @Composable (Modifier) -> Unit) {
-    var expanded by remember { mutableStateOf(false) }
+    val state = rememberSaveableStateHolder()
+
+    var expanded by rememberSaveable { mutableStateOf(false) }
     val context = LocalContext.current
     val displayMetrics = context.resources.displayMetrics
     val density = LocalDensity.current
@@ -64,6 +65,9 @@ fun Feedback(modifier: Modifier = Modifier, content: @Composable (Modifier) -> U
 
     var fabSize by remember { mutableStateOf(IntSize(0, 0)) }
     val contentModifier = Modifier.blur(blur.value)
+    BackHandler(enabled = expanded) {
+        expanded = false
+    }
     BoxWithConstraints(modifier = modifier) {
         content(contentModifier)
         AnimatedVisibility(
@@ -93,7 +97,6 @@ fun Feedback(modifier: Modifier = Modifier, content: @Composable (Modifier) -> U
             FloatingActionButton(
                 onClick = {
                     expanded = !expanded
-                    println("Feedback button clicked")
                 },
                 modifier = Modifier
                     .onGloballyPositioned {
