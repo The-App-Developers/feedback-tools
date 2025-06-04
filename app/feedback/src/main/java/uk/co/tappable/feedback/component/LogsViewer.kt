@@ -23,6 +23,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -33,9 +34,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.map
 import timber.log.Timber
+import uk.co.tappable.feedback.R
 import uk.co.tappable.feedback.logs.InAppLoggingTree
 import uk.co.tappable.feedback.logs.LogEvent
 
@@ -52,7 +55,10 @@ fun LogsViewer(modifier: Modifier = Modifier, onLogClicked: (LogEvent) -> Unit =
                 .fillMaxSize()
                 .then(modifier)
         ) {
-            Text(text = "No logging tree found", modifier = Modifier.align(Alignment.Center))
+            Text(
+                text = stringResource(R.string.no_logging_tree_found),
+                modifier = Modifier.align(Alignment.Center)
+            )
         }
         return
     }
@@ -69,9 +75,7 @@ fun LogsViewer(modifier: Modifier = Modifier, onLogClicked: (LogEvent) -> Unit =
         }
             .collectAsState(null)
     Column(
-        Modifier
-            .padding(horizontal = 16.dp)
-            .navigationBarsPadding()
+        modifier.padding(horizontal = 16.dp)
     ) {
         Spacer(modifier = Modifier.height(24.dp))
         Row(
@@ -80,7 +84,7 @@ fun LogsViewer(modifier: Modifier = Modifier, onLogClicked: (LogEvent) -> Unit =
             TextField(
                 value = textFilter,
                 onValueChange = { textFilter = it },
-                label = { Text("Search") },
+                label = { Text(stringResource(R.string.search)) },
                 modifier = Modifier.weight(3f),
             )
             Spacer(modifier = Modifier.width(6.dp))
@@ -105,7 +109,7 @@ fun LogsViewer(modifier: Modifier = Modifier, onLogClicked: (LogEvent) -> Unit =
                         .clickable {
                             onLogClicked(log)
                         }
-                        .animateItemPlacement(),
+                        .animateItem(),
                     logEvent = log
                 )
             }
@@ -139,8 +143,8 @@ private fun LogFilter(
             value = textFromLogLevel(selectedFilter),
             onValueChange = {},
             readOnly = true,
-            label = { Text("Filter") },
-            modifier = Modifier.menuAnchor(),
+            label = { Text(stringResource(R.string.filter)) },
+            modifier = Modifier.menuAnchor(type = MenuAnchorType.PrimaryEditable),
             colors = ExposedDropdownMenuDefaults.textFieldColors(),
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = filterExpanded) },
         )

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="no_logging_tree_found">No logging tree found</string>
+    <string name="search">Search</string>
+    <string name="filter">Filter</string>
+</resources>
