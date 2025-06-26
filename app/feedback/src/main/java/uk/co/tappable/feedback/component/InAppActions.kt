@@ -27,7 +27,6 @@ import androidx.compose.ui.unit.dp
 fun InAppActions(
     modifier: Modifier = Modifier,
     actions: List<Action>,
-    onClick: (Action) -> Unit,
 ) {
     LazyColumn(
         modifier.scrollable(
@@ -39,7 +38,7 @@ fun InAppActions(
     ) {
         items(actions) {
             ActionMenuItem(
-                onClick = { onClick(it) },
+                onClick = it.onClick,
                 action = it,
                 modifier = Modifier
                     .fillMaxWidth()
