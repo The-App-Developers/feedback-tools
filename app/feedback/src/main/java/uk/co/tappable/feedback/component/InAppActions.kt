@@ -59,9 +59,7 @@ fun ActionMenuItem(modifier: Modifier = Modifier, onClick: () -> Unit, action: A
 
 @Composable
 fun ClickableAction(
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit,
-    action: Action.Click
+    modifier: Modifier = Modifier, onClick: () -> Unit, action: Action.Click
 ) {
     ElevatedButton(onClick, modifier) {
         Text(action.title)
@@ -98,8 +96,8 @@ private fun ActionMenuItem_Preview() {
 @Composable
 private fun ActionMenu_Toggle_Preview() {
     ActionMenuItem(
-        action = Action.Toggle(title = "Test", checked = true),
-        onClick = {}
+        action = Action.Toggle(title = "Test", checked = true, onClick = {}),
+        onClick = {},
     )
 }
 
@@ -107,15 +105,19 @@ private fun ActionMenu_Toggle_Preview() {
 sealed class Action(
     open val id: Int = 0,
     open val title: String,
+    open val onClick: () -> Unit,
 ) {
-    data class Click(override val title: String, override val id: Int = 0) :
-        Action(title = title, id = id)
+    data class Click(
+        override val title: String,
+        override val id: Int = 0,
+        override val onClick: () -> Unit = { },
+    ) : Action(title = title, id = id, onClick = onClick)
 
     data class Toggle(
         override val title: String,
         override val id: Int = 0,
-        val checked: Boolean = false
-    ) :
-        Action(title = title, id = id)
+        override val onClick: () -> Unit,
+        val checked: Boolean = false,
+    ) : Action(title = title, id = id, onClick = onClick)
 
 }

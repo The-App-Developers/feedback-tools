@@ -18,8 +18,8 @@ import java.io.File
 import java.util.Date
 
 class InAppLoggingTree(
-    private val writeOnFile: Boolean,
-    private val cacheFile: File,
+    private val writeOnFile: Boolean = false,
+    private val cacheFile: File? = null,
     private val maxEntries: Int = 200
 ) :
     Timber.Tree() {
@@ -35,7 +35,8 @@ class InAppLoggingTree(
     private fun createJob(): Job = SupervisorJob()
 
     init {
-        if (!cacheFile.exists()) {
+        assert(writeOnFile == (cacheFile != null)) { "writeOnFile and cacheFile values do not match " }
+        if (cacheFile != null && !cacheFile.exists()) {
             cacheFile.createNewFile()
         }
         coroutineScope.launch {
@@ -53,7 +54,7 @@ class InAppLoggingTree(
     private fun onNewValue(value: LogEvent) {
         //print logs
         if (writeOnFile) {
-            cacheFile.appendText("\n$value")
+            cacheFile?.appendText("\n$value")
         }
         val newList = if ((_buffer.value.size + 1) > maxEntries) {
             _buffer.value.drop(1)

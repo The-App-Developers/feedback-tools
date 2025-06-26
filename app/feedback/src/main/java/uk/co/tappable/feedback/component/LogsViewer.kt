@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@file:OptIn(ExperimentalMaterial3Api::class)
 
 package uk.co.tappable.feedback.component
 
@@ -57,7 +57,8 @@ fun LogsViewer(modifier: Modifier = Modifier, onLogClicked: (LogEvent) -> Unit =
         ) {
             Text(
                 text = stringResource(R.string.no_logging_tree_found),
-                modifier = Modifier.align(Alignment.Center)
+                modifier = Modifier.align(Alignment.Center),
+                style = MaterialTheme.typography.headlineSmall
             )
         }
         return
@@ -70,10 +71,14 @@ fun LogsViewer(modifier: Modifier = Modifier, onLogClicked: (LogEvent) -> Unit =
                 it.priority >= selectedFilter!!
             }
             if (textFilter.isNotBlank()) {
-                filterByLevel.filter { it.message.contains(textFilter) }
+                filterByLevel.filter {
+                    it.message.contains(
+                        textFilter,
+                        ignoreCase = true
+                    ) || it.tag.orEmpty().contains(textFilter, ignoreCase = true)
+                }
             } else filterByLevel
-        }
-            .collectAsState(null)
+        }.collectAsState(null)
     Column(
         modifier.padding(horizontal = 16.dp)
     ) {
@@ -101,15 +106,13 @@ fun LogsViewer(modifier: Modifier = Modifier, onLogClicked: (LogEvent) -> Unit =
                 .fillMaxWidth(),
             contentPadding = PaddingValues(top = 24.dp, bottom = 24.dp)
         ) {
-            items(logs.value.orEmpty(), key = { it.hashCode() }) { log ->
+            items(logs.value.orEmpty()) { log ->
                 LogEntry(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 4.dp)
-                        .clickable {
-                            onLogClicked(log)
-                        }
                         .animateItem(),
+                    onClick = { onLogClicked(log) },
                     logEvent = log
                 )
             }

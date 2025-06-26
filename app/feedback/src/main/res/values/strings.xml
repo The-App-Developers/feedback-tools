@@ -3,4 +3,6 @@
     <string name="no_logging_tree_found">No logging tree found</string>
     <string name="search">Search</string>
     <string name="filter">Filter</string>
+    <string name="logs">Logs</string>
+    <string name="actions">Actions</string>
 </resources>
